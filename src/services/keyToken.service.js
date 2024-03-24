@@ -30,7 +30,6 @@ class KeyTokenService {
     }
 
     static findByUserId = async ( userId ) => {
-        console.log(userId);
         return await keytokenModel.findOne({ user: new  ObjectId(userId)}) // tao schema la object id nen dung types chu de string find k dc
     }
 

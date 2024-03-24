@@ -98,7 +98,6 @@ class AccessService {
     }
 
     static handleRefreshTokenV2 = async ({keyStore, user, refreshToken} ) => {
-        console.log(user);
         const { userId , email} = user;
 
         if(keyStore.refreshTokensUsed.includes(refreshToken)){
@@ -108,7 +107,6 @@ class AccessService {
 
         if(keyStore.refreshToken !== refreshToken) throw new AuthFailureError('Shop not registeted')
 
-        console.log(email);
         const foundShop = await findByEmail({email})
         if(!foundShop) throw new AuthFailureError('Shop not registeted 2')
 

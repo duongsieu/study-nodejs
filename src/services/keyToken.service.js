@@ -31,11 +31,22 @@ class KeyTokenService {
 
     static findByUserId = async ( userId ) => {
         console.log(userId);
-        return await keytokenModel.findOne({ user: new  ObjectId(userId)}).lean() // tao schema la object id nen dung types chu de string find k dc
+        return await keytokenModel.findOne({ user: new  ObjectId(userId)}) // tao schema la object id nen dung types chu de string find k dc
     }
 
     static removeKeyById = async ( id ) => {
         return await keytokenModel.deleteOne({ _id: new ObjectId(id) });
+    }
+
+    static findByRefreshTokenUsed = async ( refreshToken ) => {
+        return await keytokenModel.findOne({ refreshTokensUsed: refreshToken }).lean();
+    }
+    static findByRefreshToken = async ( refreshToken ) => {
+        return await keytokenModel.findOne({ refreshToken });
+    }
+
+    static deleteKeyByUserId = async ( userId ) => {
+        return await keytokenModel.deleteOne({ user: new  ObjectId(userId) });
     }
 }
 

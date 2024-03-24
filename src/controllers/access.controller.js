@@ -18,6 +18,24 @@ class AccessController {
             metadata: await AccessService.logout(req.keyStore)
         }).send(res)
     }
+    handlerRefreshToken =  async (req, res, next) => {
+        // return new SuccessReponse({
+        //     message: 'Get token Success!',
+        //     metadata: await AccessService.handleRefreshToken( req.body.refreshToken)
+        // }).send(res)
+
+        //v2 fixed, no need accessToken
+        console.log(req.user);
+        return new SuccessReponse({
+            message: 'Get token Success!',
+            metadata: await AccessService.handleRefreshTokenV2({
+                keyStore: req.keyStore,
+                user: req.user,
+                refreshToken: req.refreshToken,
+            } )
+
+        }).send(res)
+    }
     signUp  = async ( req , res, next) => {
         return new CREATED({
                 message: 'Regiserter Ok',

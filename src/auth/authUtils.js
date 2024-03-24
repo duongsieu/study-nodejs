@@ -9,7 +9,8 @@ const {findByUserId} = require('../services/keyToken.service')
 const HEADER = {
     API_KEY : 'x-api-key',
     CLIENT_ID: 'x-client-id',
-    AUTHORIZATION : 'authorization'
+    AUTHORIZATION : 'authorization',
+    REFRESHTOKEN: 'x-rtoken-id'
 }
 
 const createTokenPair = async (payload, publicKey, privateKey) => {
@@ -30,8 +31,6 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
                 console.log(`decode verify::`, decode)
             }
         })
-        console.log(accessToken);
-        console.log(refreshToken);
         return { accessToken, refreshToken}
     } catch (error) {
         console.log(error);
@@ -67,8 +66,56 @@ const authentication = asyncHandeler ( async (req , res, next) => {
     }
 })
 
+const authenticationV2= asyncHandeler ( async (req , res, next) => {
+    /*
+        1 -  Check userId missing ??
+        2- Get accessToken
+        3- Verify token
+        4- Check user trong db?
+        5- Check keyStore with this userId?
+        6- Oke => return next
+    */
+
+    const userId =req.headers[HEADER.CLIENT_ID]
+    if(!userId) throw new AuthFailureError('Invalid Request')
+
+    const keyStore = await findByUserId(userId)
+    if(!keyStore) throw new NotFoundError('Not found keyStore')
+    if (req.headers[HEADER.REFRESHTOKEN]){
+        try {
+            const refreshToken = req.headers[HEADER.REFRESHTOKEN]
+            const decodeUser = JWT.verify(refreshToken, keyStore.privateKey)
+            if(userId !== decodeUser.userId) throw new AuthFailureError('Invalid UserId')
+            req.keyStore = keyStore
+            req.user = decodeUser
+            req.refreshToken = refreshToken
+
+            return next()
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const accessToken = req.headers[HEADER.AUTHORIZATION]
+    if(!accessToken) throw new AuthFailureError('Invalid Request')
+
+    try {
+        const decodeUser = JWT.verify(accessToken, keyStore.publicKey)
+        if(userId !== decodeUser.userId) throw new AuthFailureError('Invalid UserId')
+        req.keyStore = keyStore
+        return next()
+    } catch (error) {
+        throw error
+    }
+})
+
+const verifyJWT = async (token, keySecret) => {
+    return await JWT.verify(token, keySecret) 
+}
 
 module.exports = {
     createTokenPair,
-    authentication
+    authentication,
+    authenticationV2,
+    verifyJWT
 }
